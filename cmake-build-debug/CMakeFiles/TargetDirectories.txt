@@ -1,0 +1,3 @@
+/Users/lindseyvarner/3145/cmake-build-debug/CMakeFiles/colsort.dir
+/Users/lindseyvarner/3145/cmake-build-debug/CMakeFiles/edit_cache.dir
+/Users/lindseyvarner/3145/cmake-build-debug/CMakeFiles/rebuild_cache.dir
