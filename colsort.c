@@ -1,31 +1,45 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#define MAX 128
+#include <ctype.h>
+#define MAX 129
 
 int countWords(char* line, int* wordIndices) {
     int count = 0;
-    int i;
+    int currentIndex = 0;
+    int lineLength = strlen(line);
 
-    for (i = 0; i < strlen(line); i++) {
-        if (line[i] == ' ' || line[i] == '\n') {
-            wordIndices[count] = i;
-            count++;
+    for (int i = 0; i < lineLength; i++) {
+        if (line[i] != ' ') {
+            // If this is the first character of a new word, record its index
+            if (currentIndex == 0 || line[currentIndex - 1] == ' ') {
+                wordIndices[count] = i;
+                count++;
+            }
+            currentIndex++;
+        } else {
+            // Delete extra spaces
+            while (line[i + 1] == ' ') {
+                i++;
+            }
         }
     }
-    return count + 1;
+    return count;
 }
 
-int compare(const void* a, const void* b) {
-    return strcmp(*(char**)a, *(char**)b);
+int compare(const void *a, const void *b) {
+    char *s1 = *(char **)a;
+    char *s2 = *(char **)b;
+    return strcmp(s1, s2);
 }
 
 int main(int argc, char *argv[]) {
-    FILE* fileptr;
+    FILE *fileptr;
     char line[MAX];
-    char** lines;
+    char **lines;
     int i, lineCount;
-    char* filename;
+    char *filename;
+    int startingWord = 0;
     int wordIndices[MAX];
 
     if (argc > 3) {
@@ -33,18 +47,24 @@ int main(int argc, char *argv[]) {
         exit(1);
     }
 
-    // Get the input filename from the command line argument
-    //filename = argv[1];
-    filename = argv[1];
+    if (argc == 2) {
+        filename = argv[1];
+    } else if (argc == 3) {
+        if (argv[1][0] == '-') {
+            startingWord = atoi(argv[1] + 1);
+            filename = argv[2];
+        } else {
+            fprintf(stderr, "Error: Bad command line parameters\n");
+            exit(1);
+        }
+    }
 
-    // Open the input file
     fileptr = fopen(filename, "r");
     if (fileptr == NULL) {
         fprintf(stderr, "Error: Cannot open file %s\n", filename);
         exit(1);
     }
 
-    // Read each line of the file and store the lines in an array of strings
     lineCount = 0;
     lines = NULL;
     while (fgets(line, MAX, fileptr) != NULL) {
@@ -54,7 +74,7 @@ int main(int argc, char *argv[]) {
             exit(1);
         }*/
         lineCount++;
-        lines = realloc(lines, lineCount * sizeof(char*));
+        lines = realloc(lines, lineCount * sizeof(char *));
         if (lines == NULL) {
             fprintf(stderr, "Error: Malloc failed\n");
             exit(1);
@@ -67,17 +87,19 @@ int main(int argc, char *argv[]) {
         strcpy(lines[lineCount - 1], line);
     }
 
-    // Sort the lines lexicographically
-    qsort(lines, lineCount, sizeof(char*), compare);
+    qsort(lines, lineCount, sizeof(char *), compare);
 
-    // Print the sorted lines
     for (i = 0; i < lineCount; i++) {
-        printf("%s", lines[i]);
+        int wordCount = countWords(lines[i], wordIndices);
+        if (startingWord >= wordCount) {
+            startingWord = 0;
+        }
+        char *wordToCompare = lines[i] + wordIndices[startingWord];
+        printf("%s", wordToCompare);
         free(lines[i]);
     }
     free(lines);
 
-    // Close the file
     fclose(fileptr);
 
     return 0;
