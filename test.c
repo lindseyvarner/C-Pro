@@ -27,24 +27,18 @@ int countWords(char* line, int* wordIndices) {
     return count;
 }
 
-int compare(const void* a, const void* b, int startingWord) {
-    char* lineA = *(char**)a;
-    char* lineB = *(char**)b;
-    int wordIndicesA[MAX];
-    int wordIndicesB[MAX];
-    int wordCountA = countWords(lineA, wordIndicesA);
-    int wordCountB = countWords(lineB, wordIndicesB);
-    int startA = wordIndicesA[startingWord];
-    int startB = wordIndicesB[startingWord];
-    return strcmp(lineA + startA, lineB + startB);
+int compare(const void *a, const void *b) {
+    char *s1 = *(char **)a;
+    char *s2 = *(char **)b;
+    return strcmp(s1, s2);
 }
 
 int main(int argc, char *argv[]) {
-    FILE* fileptr;
+    FILE *fileptr;
     char line[MAX];
-    char** lines;
+    char **lines;
     int i, lineCount;
-    char* filename;
+    char *filename;
     int startingWord = 0;
     int wordIndices[MAX];
 
@@ -80,7 +74,7 @@ int main(int argc, char *argv[]) {
             exit(1);
         }*/
         lineCount++;
-        lines = realloc(lines, lineCount * sizeof(char*));
+        lines = realloc(lines, lineCount * sizeof(char *));
         if (lines == NULL) {
             fprintf(stderr, "Error: Malloc failed\n");
             exit(1);
@@ -93,14 +87,14 @@ int main(int argc, char *argv[]) {
         strcpy(lines[lineCount - 1], line);
     }
 
-    qsort(lines, lineCount, sizeof(char*), compare);
+    qsort(lines, lineCount, sizeof(char *), compare);
 
     for (i = 0; i < lineCount; i++) {
         int wordCount = countWords(lines[i], wordIndices);
         if (startingWord >= wordCount) {
             startingWord = 0;
         }
-        char* wordToCompare = lines[i] + wordIndices[startingWord];
+        char *wordToCompare = lines[i] + wordIndices[startingWord];
         printf("%s", wordToCompare);
         free(lines[i]);
     }
@@ -109,3 +103,15 @@ int main(int argc, char *argv[]) {
     fclose(fileptr);
 
     return 0;
+}
+
+
+
+
+
+
+
+
+
+
+

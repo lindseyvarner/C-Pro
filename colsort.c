@@ -2,6 +2,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <gethostuuid.h>
+#include <time.h>
+
 #define MAX 129
 
 int countWords(char* line, int* wordIndices) {
@@ -27,13 +30,13 @@ int countWords(char* line, int* wordIndices) {
     return count;
 }
 
-int compare(const void *a, const void *b) {
-    char *s1 = *(char **)a;
-    char *s2 = *(char **)b;
+int compare(const void* a, const void* b) {
+    char *s1 = *(char**)a;
+    char *s2 = *(char**)b;
     return strcmp(s1, s2);
 }
 
-int main(int argc, char *argv[]) {
+int drive_sort(int argc, char* argv[]) {
     FILE *fileptr;
     char line[MAX];
     char **lines;
@@ -74,7 +77,7 @@ int main(int argc, char *argv[]) {
             exit(1);
         }*/
         lineCount++;
-        lines = realloc(lines, lineCount * sizeof(char *));
+        lines = realloc(lines, lineCount * sizeof(char*));
         if (lines == NULL) {
             fprintf(stderr, "Error: Malloc failed\n");
             exit(1);
@@ -87,7 +90,7 @@ int main(int argc, char *argv[]) {
         strcpy(lines[lineCount - 1], line);
     }
 
-    qsort(lines, lineCount, sizeof(char *), compare);
+    qsort(lines, lineCount, sizeof(char*), compare);
 
     for (i = 0; i < lineCount; i++) {
         int wordCount = countWords(lines[i], wordIndices);
@@ -104,3 +107,28 @@ int main(int argc, char *argv[]) {
 
     return 0;
 }
+
+int main(int argc, char* argv[])
+{
+    int ret = 0;
+    double time;
+    struct timespec s;
+    struct timespec e;
+    clock_gettime(CLOCK_MONOTONIC, &s);
+    ret = drive_sort(argc, argv);
+    clock_gettime(CLOCK_MONOTONIC, &e);
+    time = e.tv_sec - s.tv_sec + (e.tv_nsec - s.tv_nsec) / 1e9;
+    fprintf(stderr, "time: %lfs\n", time);
+    return ret;
+}
+
+
+
+
+
+
+
+
+
+
+
