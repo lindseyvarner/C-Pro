@@ -5,7 +5,8 @@
 #define MAX_LINE_LENGTH 128
 
 int compareLines(const void *a, const void *b) {
-    return strcmp(*(char **)a, *(char **)b);
+    // Start comparing the lines from the second word
+    return strcmp(*(char **)a + strlen(*(char **)a) + 1, *(char **)b + strlen(*(char **)b) + 1);
 }
 
 int main(int argc, char *argv[]) {
@@ -13,19 +14,17 @@ int main(int argc, char *argv[]) {
     char line[MAX_LINE_LENGTH];
     char **lines;
     int i, lineCount;
-    char *filename;
+    // char *filename;
 
     // Check if the input filename was provided
-    if (argc != 2) {
+    /*if (argc != 2) {
         fprintf(stderr, "Usage: %s <filename>\n", argv[0]);
         return -1;
-    }
-
-    // Get the input filename from the command line argument
-    filename = argv[1];
+    }*/
+    //filename = argv[1];
 
     // Open the input file
-    fp = fopen(filename, "r");
+    fp = fopen("test.txt", "r");
     if (fp == NULL) {
         perror("Error opening file");
         return -1;
@@ -63,8 +62,11 @@ int main(int argc, char *argv[]) {
     }
     free(lines);
 
-    // Close the file
-    fclose(fp);
-
     return 0;
+}
+
+if (line[strlen(line) - 1] != '\n') {
+fprintf(stderr, "Line too long\n");
+printf("String length: %lu", strlen(line));
+exit(1);
 }
