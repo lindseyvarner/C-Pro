@@ -7,6 +7,50 @@
 
 #define MAX 129
 
+struct line {
+    char *line;
+    char *key;
+};
+
+struct list {
+    int size;
+    int capacity;
+    struct line* data;
+};
+
+void init(struct list* newlist) {
+    newlist->size = 0;
+    newlist->capacity = 1000;
+    newlist->data = malloc(sizeof(struct line)*1000);
+}
+
+void resize(struct list* newlist) {
+    int capacity = newlist->capacity*2;
+    newlist->capacity = capacity;
+    newlist->data = realloc(newlist->data, sizeof(struct line)*capacity);
+}
+
+void add(struct list* newlist, char* line, char* key) {
+    if (newlist->size == newlist->capacity) {
+        resize(newlist);
+    }
+    newlist->data[newlist->size].line = line;
+    newlist->data[newlist->size].key = key;
+    newlist->size++;
+}
+
+void cleanup(struct list* newlist) {
+    free(newlist->data);
+    newlist->size = 0;
+    newlist->capacity = 0;
+}
+
+// Finds nth space in array
+void nthword(struct line* newline, int nthword) {
+    newline->key = //feed in nth word from newline
+    newline->line
+}
+
 int countWords(char* line, int* wordIndices) {
     int count = 0;
     int currentIndex = 0;
@@ -31,17 +75,17 @@ int countWords(char* line, int* wordIndices) {
 }
 
 int compare(const void* a, const void* b) {
-    char *s1 = *(char**)a;
-    char *s2 = *(char**)b;
-    return strcmp(s1, s2);
+    struct line* l1 = (struct line*)a;
+    struct line* l2 = (struct line*)b;
+    return strcmp(l1->key, l2->key);
 }
 
 int drive_sort(int argc, char* argv[]) {
-    FILE *fileptr;
+    FILE* fileptr;
     char line[MAX];
-    char **lines;
+    struct line* lines;
     int i, lineCount;
-    char *filename;
+    char* filename;
     int startingWord = 0;
     int wordIndices[MAX];
 
@@ -75,60 +119,68 @@ int drive_sort(int argc, char* argv[]) {
             fprintf(stderr, "Line too long\n");
             printf("String length: %lu", strlen(line));
             exit(1);
-        }*/
+        }
         lineCount++;
-        lines = realloc(lines, lineCount * sizeof(char*));
+        lines = realloc(lines, lineCount * sizeof(struct line));
         if (lines == NULL) {
             fprintf(stderr, "Error: Malloc failed\n");
             exit(1);
         }
-        lines[lineCount - 1] = malloc(strlen(line) + 1);
-        if (lines[lineCount - 1] == NULL) {
+        lines[lineCount - 1].line = malloc(strlen(line) + 1);
+        if (lines[lineCount - 1].line == NULL) {
             fprintf(stderr, "Error: Malloc failed\n");
             exit(1);
         }
-        strcpy(lines[lineCount - 1], line);
-    }
+        strcpy(lines[lineCount - 1].line, line);
 
-    qsort(lines, lineCount, sizeof(char*), compare);
-
-    for (i = 0; i < lineCount; i++) {
-        int wordCount = countWords(lines[i], wordIndices);
-        if (startingWord >= wordCount) {
+        int wordCount = countWords(line, wordIndices);
+        if (wordCount <= startingWord) {
             startingWord = 0;
         }
-        char *wordToCompare = lines[i] + wordIndices[startingWord];
-        printf("%s", wordToCompare);
-        free(lines[i]);
+        char* wordToCompare = line + wordIndices[startingWord];
+        lines[lineCount - 1].key = malloc(strlen(wordToCompare) + 1);
+        if (lines[lineCount - 1].key == NULL) {
+            fprintf(stderr, "Error: Malloc failed\n");
+            exit(1);
+        }
+        strcpy(lines[lineCount - 1].key, wordToCompare);
     }
-    free(lines);
+        qsort(lines, lineCount, sizeof(struct line), compare);
 
-    fclose(fileptr);
+        for (i = 0; i < lineCount; i++) {
+            printf("%s\n", lines[i].line);
+            free(lines[i].line);
+            free(lines[i].key);
+        }
+        free(lines);
 
-    return 0;
-}
+        fclose(fileptr);
 
-int main(int argc, char* argv[])
-{
-    int ret = 0;
-    double time;
-    struct timespec s;
-    struct timespec e;
-    clock_gettime(CLOCK_MONOTONIC, &s);
-    ret = drive_sort(argc, argv);
-    clock_gettime(CLOCK_MONOTONIC, &e);
-    time = e.tv_sec - s.tv_sec + (e.tv_nsec - s.tv_nsec) / 1e9;
-    fprintf(stderr, "time: %lfs\n", time);
-    return ret;
-}
+        return 0;
+    }*/
 
+    int drive_sort(int argc, char* argv[]) {
+        struct list l = {};
+        init(&l);
+        add(&l, "testing string", "something different");
+        add(&l, "toffee loves you", "so does nala");
+        add(&l, "nala is obsessed with trash at the moment", "she has been playing fetch with a tissue ball");
+        add(&l, "stop me from adopting more cats", "aaaaaaahhhhhhh");
+        int i;
+        for (i = 0; i < l.size; i++) {
+        printf("%s\n", l.data[i].line);
+    }
+    }
 
-
-
-
-
-
-
-
-
-
+    int main(int argc, char *argv[]) {
+        int ret = 0;
+        double time;
+        struct timespec s;
+        struct timespec e;
+        clock_gettime(CLOCK_MONOTONIC, &s);
+        ret = drive_sort(argc, argv);
+        clock_gettime(CLOCK_MONOTONIC, &e);
+        time = e.tv_sec - s.tv_sec + (e.tv_nsec - s.tv_nsec) / 1e9;
+        fprintf(stderr, "time: %lfs\n", time);
+        return ret;
+    }

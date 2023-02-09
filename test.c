@@ -2,116 +2,78 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#define MAX 129
+#include <gethostuuid.h>
+#include <time.h>
 
-int countWords(char* line, int* wordIndices) {
-    int count = 0;
-    int currentIndex = 0;
-    int lineLength = strlen(line);
+#define MAX_LENGTH 129
+#define MAX_LINES 100
+#define MAX_WORD_LENGTH 20
 
-    for (int i = 0; i < lineLength; i++) {
-        if (line[i] != ' ') {
-            // If this is the first character of a new word, record its index
-            if (currentIndex == 0 || line[currentIndex - 1] == ' ') {
-                wordIndices[count] = i;
-                count++;
-            }
-            currentIndex++;
-        } else {
-            // Delete extra spaces
-            while (line[i + 1] == ' ') {
-                i++;
-            }
-        }
+
+int compare_strings(const void *a, const void *b) {
+    const char *word1 = *(const char **)a + strlen(*(const char **)a);
+    const char *word2 = *(const char **)b + strlen(*(const char **)b);
+    while (*word1 != ' ' && word1 > *(const char **)a) {
+        word1--;
     }
-    return count;
+    while (*word2 != ' ' && word2 > *(const char **)b) {
+        word2--;
+    }
+    return strcmp(word1, word2);
 }
 
-int compare(const void *a, const void *b) {
-    char *s1 = *(char **)a;
-    char *s2 = *(char **)b;
-    return strcmp(s1, s2);
+void sort_lines(char lines[][MAX_LENGTH], int n) {
+    qsort(lines, n, sizeof(lines[0]), compare_strings);
 }
 
-int main(int argc, char *argv[]) {
-    FILE *fileptr;
-    char line[MAX];
-    char **lines;
-    int i, lineCount;
-    char *filename;
-    int startingWord = 0;
-    int wordIndices[MAX];
+int drive_sort(const char *filename, const char *word) {
+    FILE *fp;
+    char line[MAX_LENGTH];
+    char lines[MAX_LINES][MAX_LENGTH];
+    int n = 0;
 
-    if (argc > 3) {
-        fprintf(stderr, "Error: Bad command line parameters\n");
+    fp = fopen(filename, "r");
+    if (fp == NULL) {
+        printf("Error opening file %s\n", filename);
         exit(1);
     }
 
-    if (argc == 2) {
-        filename = argv[1];
-    } else if (argc == 3) {
-        if (argv[1][0] == '-') {
-            startingWord = atoi(argv[1] + 1);
-            filename = argv[2];
-        } else {
-            fprintf(stderr, "Error: Bad command line parameters\n");
-            exit(1);
-        }
+    while (fgets(line, MAX_LENGTH, fp) != NULL && n < MAX_LINES) {
+        line[strcspn(line, "\n")] = 0;
+        strcpy(lines[n], line);
+        n++;
     }
 
-    fileptr = fopen(filename, "r");
-    if (fileptr == NULL) {
-        fprintf(stderr, "Error: Cannot open file %s\n", filename);
-        exit(1);
-    }
+    fclose(fp);
 
-    lineCount = 0;
-    lines = NULL;
-    while (fgets(line, MAX, fileptr) != NULL) {
-        /*if (line[strlen(line) - 1] != '\n') {
-            fprintf(stderr, "Line too long\n");
-            printf("String length: %lu", strlen(line));
-            exit(1);
-        }*/
-        lineCount++;
-        lines = realloc(lines, lineCount * sizeof(char *));
-        if (lines == NULL) {
-            fprintf(stderr, "Error: Malloc failed\n");
-            exit(1);
+    sort_lines(lines, n);
+
+    for (int i = 0; i < n; i++) {
+        const char *line = lines[i];
+        const char *word_start = line + strlen(line);
+        while (*word_start != ' ' && word_start > line) {
+            word_start--;
         }
-        lines[lineCount - 1] = malloc(strlen(line) + 1);
-        if (lines[lineCount - 1] == NULL) {
-            fprintf(stderr, "Error: Malloc failed\n");
-            exit(1);
+        if (strncmp(word_start, word, strlen(word)) == 0) {
+            printf("Line: %s\n", line);
         }
-        strcpy(lines[lineCount - 1], line);
     }
-
-    qsort(lines, lineCount, sizeof(char *), compare);
-
-    for (i = 0; i < lineCount; i++) {
-        int wordCount = countWords(lines[i], wordIndices);
-        if (startingWord >= wordCount) {
-            startingWord = 0;
-        }
-        char *wordToCompare = lines[i] + wordIndices[startingWord];
-        printf("%s", wordToCompare);
-        free(lines[i]);
-    }
-    free(lines);
-
-    fclose(fileptr);
-
     return 0;
 }
 
 
 
 
-
-
-
-
-
-
-
+int main(int argc, char* argv[])
+{
+    int ret = 0;
+    double time;
+    struct timespec s;
+    struct timespec e;
+    clock_gettime(CLOCK_MONOTONIC, &s);
+    ret = drive_sort(argc, argv);
+    clock_gettime(CLOCK_MONOTONIC, &e);
+    time = e.tv_sec - s.tv_sec + (e.tv_nsec - s.tv_nsec) / 1e9;
+    fprintf(stderr, "time: %lfs\n", time);
+    return ret;
+}
