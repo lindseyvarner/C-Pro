@@ -8,8 +8,8 @@
     #define MAX 129
 
     struct line {
-        char *line;
-        char *key;
+        char* line;
+        char* key;
     };
 
     struct list {
@@ -30,21 +30,29 @@
         newlist->data = realloc(newlist->data, sizeof(struct line)*capacity);
     }
 
-    void add(struct list* newlist, char* line, char* key) {
+    /*void add(struct list* newlist, char* line, char* key) {
         if (newlist->size == newlist->capacity) {
             resize(newlist);
         }
         newlist->data[newlist->size].line = line;
         newlist->data[newlist->size].key = key;
         newlist->size++;
+    }*/
+
+    void add(struct list* newlist, char* line) {
+        if (newlist->size == newlist->capacity) {
+            resize(newlist);
+        }
+        newlist->data[newlist->size].line = line;
+        newlist->size++;
     }
 
-    void nthword(struct line* newline, int nthword) {
+    void keyword(struct line* newline, int keyword) {
         int count = 1;
         char* c = newline->line;
         char* p = c;
         while (*c != '\0') {
-            if (count == nthword) break;
+            if (count == keyword) break;
             if (*c == ' ' && count == 1)
             {
                 c++;
@@ -57,7 +65,7 @@
             }
             count++;
         }
-        if (nthword > count) c = p;
+        if (keyword > count) c = p;
 
         char* end = c;
         while (*end != ' ') {
@@ -70,12 +78,13 @@
             c++;
         }
         key[wordsize] = '\0';
-        printf("nthword: %s\n", key);
+        printf("keyword: %s\n", key);
 
     }
 
-    void qsort(void* base, size_t nitems, size_t size, int (*compar)(const void *, const void*))
-    // void pointer, int numofitems, int size, 
+    int compare(struct line* a, struct line* b) {
+        return strcmp(a->key, b->key);
+    }
 
     void cleanup(struct list* newlist) {
         free(newlist->data);
@@ -83,36 +92,51 @@
         newlist->capacity = 0;
     }
 
+    void test_keyword(struct line* l, char* expected, int i)
+    {
+        keyword(l, i);
+        if (!(strcmp(l->key,expected))) {
+            printf("Error: Key Mismatch Expected %s, Got %s", l->key, expected);
+        }
+    }
+
     int drive_sort(int argc, char* argv[]) {
         struct list l = {};
+        int key = 5;
         init(&l);
-        add(&l, "testing   string", "something different");
-        add(&l, "toffee                loves you", "so does nala");
-        add(&l, "nala is   obsessed with trash at the moment", "she has been playing fetch with a tissue ball");
-        add(&l, "stop me from     adopting more cats     ", "aaaaaaahhhhhhh");
+        add(&l, "testing string more words");
+        add(&l, "toffee loves you");
+        add(&l, "nala is obsessed with trash at the moment");
+        add(&l, "stop me from adopting more cats");
+        test_keyword(&l.data[0], "words", 5);
 
-        nthword(&l.data[3], 4);
+        /*for (int i=0; i < l.size; i++) {
+            keyword(&l.data[i], key);
+        }*/
+        //qsort(l.data, l.size, sizeof(struct line), (int (*)(const void *, const void *)) compare);
+
+        keyword(&l.data[3], 4);
         printf("Should be adopting\n");
 
-        nthword(&l.data[0], 1);
+        keyword(&l.data[0], 1);
         printf("Should be testing\n");
 
-        nthword(&l.data[0], 2);
+        keyword(&l.data[0], 2);
         printf("Should be string\n");
 
-        nthword(&l.data[0], 10); //OOB
-        printf("Should be string\n"); //******
+        keyword(&l.data[0], 10); //OOB
+        printf("Should be string\n");
 
-        nthword(&l.data[1], 1);
+        keyword(&l.data[1], 1);
         printf("Should be toffee\n");
 
-        nthword(&l.data[0], 12); //OOB
-        printf("Should be string\n"); //******
+        keyword(&l.data[0], 12); //OOB
+        printf("Should be string\n");
 
-        nthword(&l.data[2], 3);
+        keyword(&l.data[2], 3);
         printf("Should be obsessed\n");
 
-        nthword(&l.data[2], 20); //OOB
+        keyword(&l.data[2], 20); //OOB
         printf("Should be moment\n");
 
         for (int i = 0; i < l.size; i++) {

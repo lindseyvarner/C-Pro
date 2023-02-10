@@ -39,8 +39,8 @@ void add(struct list* newlist, char* line, char* key) {
     newlist->size++;
 }
 
-/* void nthword(struct line* newline, int nthword) {
-    newline->key = nthword;//feed in nth word from newline
+/* void keyword(struct line* newline, int keyword) {
+    newline->key = keyword;//feed in nth word from newline
     newline->line;
 } */
 
