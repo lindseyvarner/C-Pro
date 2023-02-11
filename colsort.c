@@ -53,32 +53,31 @@
         char* p = c;
         while (*c != '\0') {
             if (count == keyword) break;
-            if (*c == ' ' && count == 1)
-            {
-                c++;
-            }
             p = c;
             while (*c != ' ' && *c != '\0') c++;
-            while (*c == ' ')
-            {
-                c++;
-            }
-            count++;
+            while (*c == ' ') c++;
+
+            if(*c != '\0') count++;
         }
         if (keyword > count) c = p;
 
         char* end = c;
-        while (*end != ' ') {
+        while (*end != ' ' && *end != '\0') {
             end++;
         }
         int wordsize = end - c;
         char* key = malloc(wordsize + 1);
+        if (key == NULL) {
+            fprintf(stderr, "Error: Malloc failed\n");
+            exit(1);
+        }
         for (int i=0; i < wordsize; i++) {
             key[i] = *c;
             c++;
         }
         key[wordsize] = '\0';
-        printf("keyword: %s\n", key);
+        newline->key = key;
+        // printf("keyword: %s\n", key);
 
     }
 
@@ -95,8 +94,8 @@
     void test_keyword(struct line* l, char* expected, int i)
     {
         keyword(l, i);
-        if (!(strcmp(l->key,expected))) {
-            printf("Error: Key Mismatch Expected %s, Got %s", l->key, expected);
+        if (strcmp(l->key, expected)) {
+            printf("Error: Key Mismatch Expected %s, Got %s\n", expected, l->key);
         }
     }
 
@@ -104,16 +103,26 @@
         struct list l = {};
         int key = 5;
         init(&l);
-        add(&l, "testing string more words");
-        add(&l, "toffee loves you");
-        add(&l, "nala is obsessed with trash at the moment");
-        add(&l, "stop me from adopting more cats");
-        test_keyword(&l.data[0], "words", 5);
+        add(&l, "testing string"); //0
+        add(&l, "toffee loves you"); //1
+        add(&l, "nala is obsessed with trash at the moment"); //2
+        add(&l, "stop me from adopting more cats"); //3
+        test_keyword(l.data, "string", 3);
+        test_keyword(l.data + 1, "you", 4);
+        test_keyword(l.data + 1, "loves", 2);
+        test_keyword(l.data + 2, "obsessed", 3);
+        test_keyword(l.data + 3, "more", 5);
+        test_keyword(l.data + 1, "you", 10);
+        test_keyword(l.data + 3, "stop", 1);
+        test_keyword(l.data + 2, "is", 2);
 
         /*for (int i=0; i < l.size; i++) {
             keyword(&l.data[i], key);
         }*/
         //qsort(l.data, l.size, sizeof(struct line), (int (*)(const void *, const void *)) compare);
+
+        /*keyword(&l.data[0], 5);
+        printf("Should be words\n");
 
         keyword(&l.data[3], 4);
         printf("Should be adopting\n");
@@ -137,11 +146,11 @@
         printf("Should be obsessed\n");
 
         keyword(&l.data[2], 20); //OOB
-        printf("Should be moment\n");
+        printf("Should be moment\n"); */
 
-        for (int i = 0; i < l.size; i++) {
+        /*for (int i = 0; i < l.size; i++) {
             printf("%s\n", l.data[i].line);
-        }
+        }*/
         cleanup(&l);
 
         return 0;
