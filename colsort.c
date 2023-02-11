@@ -81,7 +81,8 @@
 
     }
 
-    int compare(struct line* a, struct line* b) {
+    int compare(struct line* a, struct line* b)
+    {
         return strcmp(a->key, b->key);
     }
 
@@ -99,8 +100,50 @@
         }
     }
 
-    int drive_sort(int argc, char* argv[]) {
+    struct list open_file(char* filename, int column)
+    {
+        FILE* fileptr = fopen(filename, "r");
+        fopen(filename, "r");
+        if (NULL == fileptr) {
+            printf("Error: Cannot open file %s\n", filename);
+            exit(1);
+        }
         struct list l = {};
+        init(&l);
+
+        char* temp = malloc((sizeof(char) * 129));
+
+        while (fgets(temp, 129, fileptr) != NULL) {
+            int count = 0;
+            char* data = malloc((sizeof(char) * 129));
+            for (int i = 0; i < 128; i++) {
+                if (temp[i] == '\n' || temp[i] == '\r') count++;
+            }
+            if (count == 0) {
+                fprintf(stderr, "Line too long\n");
+                exit(1);
+            }
+            for (int i = 0; i < strlen(temp); i++) {
+                data[i] = temp[i];
+            }
+            add(&l, data);
+
+            keyword(&l.data[l.size-1], column);
+        }
+
+        fclose(fileptr);
+
+        return l;
+    }
+
+    int drive_sort(int argc, char* argv[]) {
+
+        char* filename;
+
+        filename = argv[1];
+        struct list l = open_file(filename, 1);
+
+        /*struct list l = {};
         int key = 5;
         init(&l);
         add(&l, "testing string"); //0
@@ -116,10 +159,10 @@
         test_keyword(l.data + 3, "stop", 1);
         test_keyword(l.data + 2, "is", 2);
 
-        /*for (int i=0; i < l.size; i++) {
+        for (int i=0; i < l.size; i++) {
             keyword(&l.data[i], key);
         }*/
-        //qsort(l.data, l.size, sizeof(struct line), (int (*)(const void *, const void *)) compare);
+        qsort(l.data, l.size, sizeof(struct line), (int (*)(const void *, const void *)) compare);
 
         /*keyword(&l.data[0], 5);
         printf("Should be words\n");
@@ -148,9 +191,9 @@
         keyword(&l.data[2], 20); //OOB
         printf("Should be moment\n"); */
 
-        /*for (int i = 0; i < l.size; i++) {
+        for (int i = 0; i < l.size; i++) {
             printf("%s\n", l.data[i].line);
-        }*/
+        }
         cleanup(&l);
 
         return 0;
