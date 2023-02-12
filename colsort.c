@@ -126,7 +126,7 @@
                 if (temp[i] == '\n' || temp[i] == '\r') count++;
             }
             if (count == 0) {
-                fprintf(stderr, "Line too long\n");
+                fprintf(stderr, "Error: Line too long\n");
                 exit(1);
             }
             for (int i = 0; i < strlen(temp); i++) {
@@ -144,7 +144,7 @@
 
     int drive_sort(int argc, char* argv[])
     {
-        char *filename = NULL;
+        char* filename = NULL;
         int column = 1;
         if (argc > 3) {
             fprintf(stderr, "Error: Bad command line parameters\n");
@@ -169,7 +169,7 @@
 
         return 0;
     }
-    
+
     int main(int argc, char *argv[])
     {
         int ret = 0;
